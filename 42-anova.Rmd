@@ -1,0 +1,75 @@
+---
+title: "Basic Example"
+author: "Khalil Arab"
+date: "2025-11-20"
+output: 
+  github_document: default
+  html_document: default
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_format = "all") })
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+# Librerias
+```{r librerias}
+library(dplyr)
+library(ggplot2)
+```
+
+```{r}
+# Crear el data frame
+datos <- data.frame(
+  Tipo_desayuno = factor(rep(c("Sin desayuno", "Desayuno ligero", "Desayuno completo"), 
+                            each = 5),
+                        levels = c("Sin desayuno", "Desayuno ligero", "Desayuno completo")),
+  Puntuacion = c(8, 7, 9, 13, 10,    # Sin desayuno
+                 14, 16, 12, 17, 11, # Desayuno ligero
+                 10, 12, 16, 15, 12) # Desayuno completo
+)
+```
+
+```{r}
+# Ver las primeras filas del data frame
+head(datos)
+
+```
+
+```{r}
+
+df <- group_by(datos,Tipo_desayuno)
+
+resumen <- df %>% summarise(     
+          Promedio = mean(Puntuacion),
+          Desviacion_estandar = sd(Puntuacion),
+          n = n()
+          )
+resumen
+```
+
+```{r}
+# Gráfico de cajas para visualizar las diferencias
+boxplot(Puntuacion ~ Tipo_desayuno, data = datos, 
+        main = "Comparación de Desalluno",
+        xlab = "Tipo de Desalluno", ylab = "Puntuación")
+
+```
+
+```{r}
+
+# Realizar el análisis de varianza (ANOVA)
+modelo_anova <- aov(Puntuacion ~ Tipo_desayuno, data = datos)
+
+summary(modelo_anova)
+```
+
+```{r}
+# Opcional: pruebas post-hoc (Tukey HSD) si el ANOVA es significativo
+if(summary(modelo_anova)[[1]]$'Pr(>F)'[1] < 0.05) {
+  tukey_result <- TukeyHSD(modelo_anova)
+  print(tukey_result)
+}
+```
+# Usando un ANOVA de una vía y un nivel de significancia de α = 0.05, se obtiene un p-valor < 0.05, por lo cual rechazamos la hipótesis nula, concluyendo que el tipo de desayuno sí tiene un efecto significativo en el rendimiento de los estudiantes.
+
