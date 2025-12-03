@@ -1,0 +1,93 @@
+---
+title: "Basic Example"
+author: "Khalil Arab"
+date: "2025-11-20"
+output: 
+  github_document: default
+  html_document: default
+knit: (function(inputFile, encoding) {
+  rmarkdown::render(inputFile, encoding = encoding, output_format = "all") })
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+# Planteamiento del Problema
+La industria de la telefonía celular desea comparar el **costo mensual promedio**
+de cuatro compañías (A, B, C y D).  
+Se observan tres **niveles de uso** (Bajo, Medio y Alto), que funcionan como
+**bloques** en un diseño de bloques completamente aleatorizado (DBCA).
+
+Objetivo:  
+Construir la **tabla de análisis de varianza (ANOVA sin interacciones)** y
+determinar, con un nivel de confianza del 95 %, si existen diferencias
+significativas entre las compañías.
+
+---
+# Librerias
+```{r librerias}
+library(dplyr)
+library(ggplot2)
+```
+
+```{r}
+datos <- data.frame(
+  Uso = factor(rep(c("Bajo","Medio","Alto"), each = 4),
+               levels = c("Bajo","Medio","Alto")),
+  Compania = factor(rep(c("A","B","C","D"), times = 3)),
+  Costo = c(
+    27,24,31,23,
+    68,76,65,67,
+    308,326,312,300
+  )
+)
+head(datos)
+```
+
+```{r}
+resumen_compania <- datos %>%
+  group_by(Compania) %>%
+  summarise(
+    Promedio = mean(Costo),
+    Desviacion_estandar = sd(Costo),
+    n = n()
+  )
+resumen_compania
+```
+
+```{r}
+resumen_uso <- datos %>%
+  group_by(Uso) %>%
+  summarise(
+    Promedio = mean(Costo),
+    Desviacion_estandar = sd(Costo),
+    n = n()
+  )
+resumen_uso
+```
+
+```{r}
+boxplot(Costo ~ Compania, data = datos,
+        main = "Costos por compañía",
+        xlab = "Compañía", ylab = "Costo mensual")
+```
+
+```{r}
+boxplot(Costo ~ Uso, data = datos,
+        main = "Costos por nivel de uso",
+        xlab = "Nivel de uso", ylab = "Costo mensual")
+```
+
+```{r}
+modelo_anova <- aov(Costo ~ Compania + Uso, data = datos)
+summary(modelo_anova)
+```
+
+```{r}
+anova(modelo_anova)
+```
+
+# Conclusión final (α = 0.05)
+
+- El **nivel de uso** (bloques) tiene **p < 0.05**, por lo que SÍ afecta significativamente el costo mensual.
+- El factor **compañía** tiene **p > 0.05**, por lo que NO existen diferencias significativas entre compañías.
